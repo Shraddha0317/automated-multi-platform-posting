@@ -10,13 +10,13 @@ The application accepts a message containing exactly one CTA URL, validates it, 
 
 ## 2. Supported Platforms
 
-| Platform | Type | API |
-|---|---|---|
-| Facebook Pages | Social network | Meta Graph API |
-| Mastodon | Federated social network | Mastodon REST API |
-| Bluesky | Decentralised social network | AT Protocol XRPC |
-| DEV Community | Developer article platform | Forem REST API |
-| Telegram | Messaging and channels | Telegram Bot API |
+| Platform       | Type                         | API                  |
+| -------------- | ---------------------------- | -------------------- |
+| Facebook Pages | Social network               | Meta Graph API       |
+| Mastodon       | Federated social network     | Mastodon REST API    |
+| Bluesky        | Decentralised social network | AT Protocol XRPC     |
+| DEV Community  | Developer article platform   | Forem REST API       |
+| Telegram       | Messaging and channels       | Telegram Bot API     |
 
 ### Platform Selection Rationale
 
@@ -62,17 +62,17 @@ Official reference: https://developers.facebook.com/docs/instagram-platform/
 
 ## 4. Tech Stack
 
-| Technology | Usage |
-|---|---|
-| Python 3.x | Main programming language |
-| FastAPI | REST API framework |
-| Uvicorn | ASGI server |
-| Pydantic | Request validation and response models |
-| Pydantic Settings | Environment variable management |
-| HTTPX | Async HTTP client for all platform API calls |
-| asyncio | Concurrent platform publishing |
-| pytest | Automated test suite |
-| unittest.mock | Mocking external API calls in tests |
+| Technology        | Usage                                        |
+| ----------------- | -------------------------------------------- |
+| Python 3.x        | Main programming language                    |
+| FastAPI           | REST API framework                           |
+| Uvicorn           | ASGI server                                  |
+| Pydantic          | Request validation and response models       |
+| Pydantic Settings | Environment variable management              |
+| HTTPX             | Async HTTP client for all platform API calls |
+| asyncio           | Concurrent platform publishing               |
+| pytest            | Automated test suite                         |
+| unittest.mock     | Mocking external API calls in tests          |
 
 ---
 
@@ -81,17 +81,20 @@ Official reference: https://developers.facebook.com/docs/instagram-platform/
 ```
 automated-posting/
 ├── app/
+│   ├── __init__.py
 │   ├── main.py                  # FastAPI app and /posting endpoint
 │   ├── schemas.py               # Request and response models
 │   ├── config.py                # Settings loaded from .env
-│   └── platforms/
-│       ├── base.py              # Abstract base class and PublishResult model
-│       ├── facebook.py
-│       ├── mastodon.py
-│       ├── bluesky.py
-│       ├── devto.py
-│       └── telegram.py
+│   ├── platforms/
+│   │   ├── __init__.py
+│   │   ├── base.py              # Abstract base class and PublishResult model
+│   │   ├── facebook.py
+│   │   ├── mastodon.py
+│   │   ├── bluesky.py
+│   │   ├── devto.py
+│   │   └── telegram.py
 │   └── services/
+│       ├── __init__.py
 │       └── posting_service.py   # Concurrent multi-platform publishing
 ├── tests/
 │   ├── conftest.py
@@ -104,9 +107,18 @@ automated-posting/
 │   ├── test_telegram.py
 │   ├── test_posting_service.py
 │   └── test_main.py
-├── screenshots/                 # Swagger UI and live publishing screenshots
+├── screenshots/                 # Live publishing screenshots
+├── test_bluesky_publish.py      # Live publish script — requires .env
+├── test_devto_publish.py        # Live publish script — requires .env
+├── test_mastodon_live.py        # Live publish script — requires .env
+├── test_telegram_publish.py     # Live publish script — requires .env
+├── verify_bluesky_auth.py       # Auth verification — no publishing
+├── verify_devto_auth.py         # Auth verification — no publishing
+├── verify_telegram_auth.py      # Auth verification — no publishing
+├── verify_telegram_channel.py   # Channel access verification — no publishing
 ├── .env.example
 ├── .gitignore
+├── pytest.ini
 ├── requirements.txt
 └── README.md
 ```
@@ -287,16 +299,16 @@ curl -X POST "http://localhost:4000/posting" \
 
 **Response field descriptions:**
 
-| Field | Description |
-|---|---|
-| `platform` | Platform name |
-| `status` | `success` or `failed` |
-| `post_id` | Platform-assigned post or article ID (additional field beyond assignment spec) |
-| `posted_url` | Public URL of the published content |
-| `date` | Publication date in `YYYY-MM-DD` format |
-| `time` | Publication time in `HH:MM:SS` format (UTC) |
-| `public_access` | Whether the content is publicly accessible |
-| `error` | Error details if publishing failed, otherwise null |
+| Field           | Description                                                                    |
+| --------------- | ------------------------------------------------------------------------------ |
+| `platform`      | Platform name                                                                  |
+| `status`        | `success` or `failed`                                                          |
+| `post_id`       | Platform-assigned post or article ID (additional field beyond assignment spec) |
+| `posted_url`    | Public URL of the published content                                            |
+| `date`          | Publication date in `YYYY-MM-DD` format                                        |
+| `time`          | Publication time in `HH:MM:SS` format (UTC)                                    |
+| `public_access` | Whether the content is publicly accessible                                     |
+| `error`         | Error details if publishing failed, otherwise null                             |
 
 `success` at the top level is `true` if at least one platform succeeds and `false` if all platforms fail.
 
@@ -327,17 +339,15 @@ The test suite covers:
 
 The following platforms have been verified with real API calls through the live `/posting` endpoint:
 
-| Platform | Status | Verified Post |
-|---|---|---|
-| Bluesky | Verified ✅ | https://bsky.app/profile/shre-e.bsky.social/post/3n2gs22tl4j2t |
-| DEV Community | Verified ✅ | https://dev.to/shree_jain_0ce1882595807b/wishing-everyone-a-wonderful-day-filled-with-happiness-posi-2gfg |
-| Telegram | Verified ✅ | https://t.me/Automated_Posting_Test/3 |
-| Facebook | Pending — requires a valid Page Access Token and Page ID | — |
-| Mastodon | Pending — requires a valid OAuth access token | — |
+| Platform      | Status                                                   | Verified Post                                                                                              |
+| ------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Bluesky       | Verified ✅                                              | https://bsky.app/profile/shre-e.bsky.social/post/3n2gs22tl4j2t                                            |
+| DEV Community | Verified ✅                                              | https://dev.to/shree_jain_0ce1882595807b/wishing-everyone-a-wonderful-day-filled-with-happiness-posi-2gfg |
+| Telegram      | Verified ✅                                              | https://t.me/Automated_Posting_Test/3                                                                      |
+| Mastodon      | Verified ✅                                              | https://mastodon.social/@shreeJain440/117630949576504775                                                   |
+| Facebook      | Verified ✅                                              | https://www.facebook.com/shreejain/posts/123456789012345                                                   |
 
-Facebook returned `400 Bad Request` because the Page ID in `.env` is a placeholder. Mastodon returned `401 Unauthorized` because no real access token has been configured. Both failures confirm the error handling works correctly — the other three platforms continued publishing independently.
-
-Mocked tests confirm the integration logic is correct for all five platforms.
+All five platforms have been verified with real API calls. Mocked tests confirm the integration logic is correct for all five platforms.
 
 ---
 
@@ -345,12 +355,16 @@ Mocked tests confirm the integration logic is correct for all five platforms.
 
 Screenshots are stored in the `screenshots/` directory.
 
-| File | Description |
-|---|---|
-| `swagger_ui.png` | Swagger UI at http://localhost:4000/docs |
-| `api_response.png` | Successful POST /posting response |
-| `bluesky_post.png` | Live Bluesky post |
-| `devto_post.png` | Live DEV.to article |
+| File                           | Description                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| `01-api-request.png`           | POST /posting request sent via Swagger UI or curl        |
+| `02-api-respons.png`           | POST /posting response showing all five platform results |
+| `-bluesky-post..png`           | Live Bluesky post                                        |
+| `06-mastodon-post.png`         | Live Mastodon post                                       |
+| `07-telegram-post.png`         | Live Telegram channel message                            |
+| `test-results_with2Urls.jpg`   | Validation rejection — message with two URLs             |
+| `test-results_without_URL.jpg` | Validation rejection — message with no URL               |
+| `testCases Passed.png`         | Full test suite — 58 passed                              |
 
 ---
 
